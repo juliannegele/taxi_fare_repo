@@ -1,0 +1,15 @@
+artifact_uri: file:///home/julian/code/juliannegele/TaxiFareModel/mlruns/1/275d23c7ba2040ae8e746f1422a95b17/artifacts
+end_time: null
+entry_point_name: ''
+experiment_id: '1'
+lifecycle_stage: active
+name: ''
+run_id: 275d23c7ba2040ae8e746f1422a95b17
+run_uuid: 275d23c7ba2040ae8e746f1422a95b17
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1637070052099
+status: 1
+tags: []
+user_id: unknown

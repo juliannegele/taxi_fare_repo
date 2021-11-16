@@ -7,10 +7,19 @@ from sklearn.model_selection import train_test_split
 from TaxiFareModel.encoders import DistanceTransformer, TimeFeaturesEncoder
 from TaxiFareModel.utils import compute_rmse
 from TaxiFareModel.data import clean_data, get_data
+import mlflow
+from mlflow.tracking import MlflowClient
+#import ml_flow_test
+from memoized_property import memoized_property
+import joblib
 
+MLFLOW_URI = "https://mlflow.lewagon.co/"
 
 class Trainer():
-    def __init__(self, X, y):
+
+
+
+    def __init__(self, X, y, experiment_name):
         """
             X: pandas DataFrame
             y: pandas Series
@@ -18,6 +27,8 @@ class Trainer():
         self.pipeline = None
         self.X = X
         self.y = y
+        self.experiment_name = experiment_name
+
 
     def set_pipeline(self):
         dist_pipe = Pipeline([
@@ -52,13 +63,43 @@ class Trainer():
         return rmse
 
 
+    @memoized_property
+    def mlflow_client(self):
+        mlflow.set_tracking_uri(MLFLOW_URI)
+        return MlflowClient()
+
+    @memoized_property
+    def mlflow_experiment_id(self):
+        try:
+            return self.mlflow_client.create_experiment(self.experiment_name)
+        except BaseException:
+            return self.mlflow_client.get_experiment_by_name(self.experiment_name).experiment_id
+
+    @memoized_property
+    def mlflow_run(self):
+        return self.mlflow_client.create_run(self.mlflow_experiment_id)
+
+    def mlflow_log_param(self, key, value):
+        self.mlflow_client.log_param(self.mlflow_run.info.run_id, key, value)
+
+    def mlflow_log_metric(self, key, value):
+        self.mlflow_client.log_metric(self.mlflow_run.info.run_id, key, value)
+
+    def train(self):
+
+        for model in ["linear", "Randomforest"]:
+            self.mlflow_run()
+            self.mlflow_log_metric("rmse", 4.5)
+            self.mlflow_log_param("model", model)
+
+
 if __name__ == "__main__":
     df = get_data()
     df = clean_data(df)
     y = df["fare_amount"]
     X = df.drop("fare_amount", axis=1)
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
-    trainer = Trainer(X_train, y_train)
-    trainer.run()
+    trainer = Trainer(X_train, y_train,"[GER] [MUNICH] [juliannegele] taxi_fare_model 2.0")
     result = trainer.evaluate(X_test, y_test)
-    print('TODO')
+    trainer.train()
+    trainer.run()
