@@ -38,14 +38,15 @@ class Trainer():
     ])
         return pipe
 
-    def run(self,X_train, y_train, pipeline):
+    def run(self):
         """set and train the pipeline"""
-        pipeline.fit(X_train, y_train)
-        return pipeline
+        self.pipeline = Trainer.set_pipeline(self)
+        self.pipeline.fit(self.X, self.y)
+        return self.pipeline
 
-    def evaluate(self,X_test, y_test, pipeline):
+    def evaluate(self,X_test, y_test):
         """returns the value of the RMSE"""
-        y_pred = pipeline.predict(X_test)
+        y_pred = self.pipeline.predict(X_test)
         rmse = compute_rmse(y_pred, y_test)
         print(rmse)
         return rmse
@@ -57,8 +58,7 @@ if __name__ == "__main__":
     y = df["fare_amount"]
     X = df.drop("fare_amount", axis=1)
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
-    trainer = Trainer(X, y)
-    pipeline = trainer.set_pipeline()
-    trainer.run(X_train, y_train, pipeline)
-    result = trainer.evaluate(X_test, y_test, pipeline)
+    trainer = Trainer(X_train, y_train)
+    trainer.run()
+    result = trainer.evaluate(X_test, y_test)
     print('TODO')
